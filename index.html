@@ -1,0 +1,396 @@
+<title>Liga CS2 Portugal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;600&display=swap">
+<style>
+/* Layout: cabeçalho, separadores, cartões de equipa com painel de detalhe (dialog), tabelas roláveis. */
+:root {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --fg: #16181d;
+  --muted: #646a75;
+  --line: #dcdcd6;
+  --accent: #c8102e;
+  --accent-fg: #ffffff;
+  --win: #1f7a4d;
+  --draw: #8a6d00;
+  --loss: #b3261e;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1115;
+    --surface: #181b22;
+    --fg: #eceef2;
+    --muted: #9aa1ad;
+    --line: #2a2f3a;
+    --accent: #ff4d64;
+    --accent-fg: #0f1115;
+    --win: #4cc38a;
+    --draw: #e0b84a;
+    --loss: #ff7a70;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1115;
+  --surface: #181b22;
+  --fg: #eceef2;
+  --muted: #9aa1ad;
+  --line: #2a2f3a;
+  --accent: #ff4d64;
+  --accent-fg: #0f1115;
+  --win: #4cc38a;
+  --draw: #e0b84a;
+  --loss: #ff7a70;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-inline: 16px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 24px 48px; }
+header.top {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: 12px; padding-block: 8px 16px; border-bottom: 2px solid var(--fg);
+}
+.brand { font-family: var(--display); font-weight: 800; font-size: 40px; line-height: 1; text-transform: uppercase; letter-spacing: 0.01em; margin: 0; }
+.brand span { color: var(--accent); }
+.tag { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; }
+nav.tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-block: 16px 24px; }
+nav.tabs button {
+  font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: 18px; letter-spacing: 0.02em;
+  background: none; color: var(--muted); border: 0; border-bottom: 3px solid transparent; padding: 6px 14px; cursor: pointer;
+}
+nav.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+nav.tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h2 { font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: 28px; margin: 0 0 4px; letter-spacing: 0.01em; }
+.lede { color: var(--muted); margin: 0 0 20px; max-width: 64ch; }
+.note { font-size: 13px; color: var(--muted); border-left: 3px solid var(--accent); padding: 4px 12px; margin: 0 0 20px; }
+.hidden-panel[hidden] { display: none; }
+
+/* Equipas */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.team-btn {
+  all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px 16px; text-align: center; min-width: 0;
+}
+.team-btn:hover { border-color: var(--accent); }
+.team-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.logo {
+  width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center; overflow: hidden;
+  background: var(--bg); border: 2px solid var(--line); font-family: var(--display); font-weight: 800; font-size: 24px; color: var(--accent);
+}
+.logo img { width: 100%; height: 100%; object-fit: contain; max-width: 100%; }
+.team-btn .nome { font-weight: 600; overflow-wrap: anywhere; }
+.team-btn .cidade { font-size: 13px; color: var(--muted); }
+
+dialog {
+  background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 8px;
+  padding: 0; width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px);
+}
+dialog::backdrop { background: rgb(0 0 0 / 0.5); }
+.dlg-head { display: flex; gap: 14px; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+.dlg-head .logo { width: 56px; height: 56px; font-size: 18px; }
+.dlg-head h3 { margin: 0; font-family: var(--display); font-size: 26px; text-transform: uppercase; line-height: 1.1; }
+.dlg-head p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.dlg-body { padding: 16px 20px 20px; overflow: auto; }
+.sec-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 8px; }
+.roster { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+.roster li { background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; font-size: 14px; min-width: 0; overflow-wrap: anywhere; }
+.roster li.coach { border-color: var(--accent); }
+.roster li small { display: block; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+.forma { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.chip {
+  display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 4px;
+  font-family: var(--display); font-weight: 800; font-size: 16px; color: var(--accent-fg);
+}
+.chip.W { background: var(--win); }
+.chip.D { background: var(--draw); }
+.chip.L { background: var(--loss); }
+.forma-detail { font-size: 13px; color: var(--muted); }
+.close { margin-top: 16px; font: inherit; font-weight: 600; background: var(--accent); color: var(--accent-fg); border: 0; border-radius: 4px; padding: 8px 16px; cursor: pointer; }
+.close:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+/* Calendário */
+.round { margin-bottom: 18px; }
+.round h3 { font-family: var(--display); text-transform: uppercase; font-size: 18px; margin: 0 0 8px; color: var(--muted); }
+.match { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin-bottom: 8px; }
+.match .side { min-width: 0; overflow-wrap: anywhere; }
+.match .side.r { text-align: right; }
+.match .score { font-family: var(--display); font-weight: 700; font-size: 22px; min-width: 84px; text-align: center; font-variant-numeric: tabular-nums; }
+.match.scheduled .score { color: var(--muted); font-size: 16px; font-weight: 600; }
+.match .meta { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.match .win { color: var(--win); }
+
+/* Classificação */
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+td.pos { font-family: var(--display); font-weight: 700; font-size: 18px; width: 40px; }
+td.team { white-space: normal; overflow-wrap: anywhere; }
+tr.qualif td.pos { color: var(--win); }
+
+/* Taça */
+.bracket { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: start; }
+.bracket h3 { font-family: var(--display); text-transform: uppercase; font-size: 18px; margin: 0 0 8px; color: var(--muted); }
+.tie { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; margin-bottom: 10px; font-size: 14px; }
+.tie div { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; min-width: 0; }
+.tie div span:first-child { overflow-wrap: anywhere; }
+.tie div span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; flex-shrink: 0; }
+.tie .win { color: var(--win); font-weight: 700; }
+.tie .date { font-size: 12px; color: var(--muted); margin-top: 6px; }
+.participantes { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px; }
+.participantes span { background: var(--surface); border: 1px solid var(--line); border-radius: 4px; padding: 4px 10px; font-size: 13px; }
+
+footer { margin-top: 40px; font-size: 12px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand">Liga <span>CS2</span> Portugal</h1>
+    <div class="tag">Temporada 2026/27 · Dados de exemplo</div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Secções">
+    <button role="tab" id="t-equipas" aria-controls="p-equipas" aria-selected="true" data-tab="equipas">Equipas</button>
+    <button role="tab" id="t-calendario" aria-controls="p-calendario" aria-selected="false" data-tab="calendario">Calendário</button>
+    <button role="tab" id="t-classificacao" aria-controls="p-classificacao" aria-selected="false" data-tab="classificacao">Classificação</button>
+    <button role="tab" id="t-taca" aria-controls="p-taca" aria-selected="false" data-tab="taca">Taça da Liga</button>
+    <button role="tab" id="t-noticias" aria-controls="p-noticias" aria-selected="false" data-tab="noticias">Notícias</button>
+  </nav>
+
+  <section id="p-equipas" role="tabpanel" aria-labelledby="t-equipas">
+    <h2>Equipas</h2>
+    <p class="lede">Clica numa equipa para ver o plantel, o treinador e os últimos resultados.</p>
+    <p class="note">Nomes, logótipos, jogadores e resultados são exemplos. Os dados estão em <code>dados.json</code>.</p>
+    <div class="grid" id="grid-equipas"></div>
+  </section>
+
+  <section id="p-calendario" role="tabpanel" aria-labelledby="t-calendario" hidden class="hidden-panel">
+    <h2>Calendário</h2>
+    <p class="lede">Jornadas da fase regular, todas em BO1 com 24 rondas no total. Os resultados são preenchidos à medida que os jogos acontecem.</p>
+    <div id="calendario"></div>
+  </section>
+
+  <section id="p-classificacao" role="tabpanel" aria-labelledby="t-classificacao" hidden class="hidden-panel">
+    <h2>Classificação</h2>
+    <p class="lede">Vitória vale 3 pontos e empate vale 1 ponto para cada equipa. Em caso de igualdade de pontos, desempata-se pela diferença de rondas.</p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>#</th><th>Equipa</th><th class="num">J</th><th class="num">V</th><th class="num">E</th><th class="num">D</th><th class="num">RM</th><th class="num">RS</th><th class="num">Dif.</th><th class="num">Pts</th></tr></thead>
+        <tbody id="tabela"></tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-top:12px">RM = rondas marcadas, RS = rondas sofridas.</p>
+  </section>
+
+  <section id="p-taca" role="tabpanel" aria-labelledby="t-taca" hidden class="hidden-panel">
+    <h2>Taça da Liga</h2>
+    <p class="lede">Competição à parte da liga, disputada pelas equipas inscritas. Eliminatória a eliminar, em BO1 (MR12). As chaves não dependem da classificação da liga.</p>
+    <div class="participantes" id="participantes"></div>
+    <div class="bracket" id="taca"></div>
+  </section>
+
+  <section id="p-noticias" role="tabpanel" aria-labelledby="t-noticias" hidden class="hidden-panel">
+    <h2>Notícias</h2>
+    <p class="lede">Comunicados e novidades da liga. Notícias mais recentes primeiro.</p>
+    <div id="noticias"></div>
+  </section>
+
+  <footer>Os dados vêm do ficheiro dados.json. Ver LEIA-ME para atualizar.</footer>
+</div>
+
+<dialog id="dlg" aria-labelledby="dlg-nome">
+  <div class="dlg-head" id="dlg-head"></div>
+  <div class="dlg-body" id="dlg-body"></div>
+</dialog>
+
+<script>
+// ===== DADOS: carregados de dados.json (editar só esse ficheiro) =====
+let DADOS = null;
+
+// ===== LÓGICA =====
+const equipaDe = id => DADOS.equipas.find(e => e.id === id);
+const nomeDe = id => equipaDe(id)?.nome ?? id;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtData = iso => new Date(iso + "T12:00:00").toLocaleDateString("pt-PT", { weekday: "short", day: "numeric", month: "short" });
+// Regras MR12: 24 rondas no máximo, 13 rondas ganham o jogo, 12-12 é empate.
+const valido = (ra, rb) => {
+  if (!Number.isInteger(ra) || !Number.isInteger(rb) || ra < 0 || rb < 0 || ra > 13 || rb > 13) return false;
+  if (ra === 12 && rb === 12) return true;
+  return Math.max(ra, rb) === 13 && Math.min(ra, rb) <= 12;
+};
+const jogados = () => DADOS.jornadas.flatMap(j => j.jogos.map(([a, b, ra, rb]) => ({ a, b, ra, rb, data: j.data, n: j.n })))
+  .filter(m => m.ra !== null && m.rb !== null && valido(m.ra, m.rb));
+
+// Resultado: vitória 3, empate 1 para cada, derrota 0. Desempate: pontos, depois diferença de rondas.
+function classificacao() {
+  const s = {};
+  DADOS.equipas.forEach(e => s[e.id] = { id: e.id, J: 0, V: 0, E: 0, D: 0, RM: 0, RS: 0, P: 0 });
+  jogados().forEach(({ a, b, ra, rb }) => {
+    const A = s[a], B = s[b];
+    A.J++; B.J++; A.RM += ra; A.RS += rb; B.RM += rb; B.RS += ra;
+    if (ra > rb) { A.V++; B.D++; A.P += 3; }
+    else if (rb > ra) { B.V++; A.D++; B.P += 3; }
+    else { A.E++; B.E++; A.P += 1; B.P += 1; }
+  });
+  return Object.values(s).sort((x, y) =>
+    y.P - x.P || (y.RM - y.RS) - (x.RM - x.RS) || nomeDe(x.id).localeCompare(nomeDe(y.id)));
+}
+
+// Últimos resultados de uma equipa, do mais recente para o mais antigo.
+function forma(id) {
+  return jogados().filter(m => m.a === id || m.b === id).map(m => {
+    const eCasa = m.a === id;
+    const rm = eCasa ? m.ra : m.rb, rs = eCasa ? m.rb : m.ra;
+    const adv = eCasa ? m.b : m.a;
+    const res = rm > rs ? "W" : rm < rs ? "L" : "D";
+    return { res, rm, rs, adv, data: m.data, n: m.n };
+  }).reverse();
+}
+
+function renderEquipas() {
+  document.getElementById("grid-equipas").innerHTML = DADOS.equipas.map(e => `
+    <button class="team-btn" data-id="${esc(e.id)}" aria-haspopup="dialog">
+      ${logoHtml(e)}
+      <span class="nome">${esc(e.nome)}</span>
+      <span class="cidade">${esc(e.cidade)}</span>
+    </button>`).join("");
+}
+
+function logoHtml(e) {
+  return `<div class="logo">${e.logo ? `<img src="${esc(e.logo)}" alt="Logótipo ${esc(e.nome)}">` : esc(e.id)}</div>`;
+}
+
+function abreEquipa(id) {
+  const e = equipaDe(id);
+  const f = forma(id);
+  const ultimos = f.slice(0, 5);
+  document.getElementById("dlg-head").innerHTML = `
+    ${logoHtml(e)}
+    <div><h3 id="dlg-nome">${esc(e.nome)}</h3><p>${esc(e.cidade)}</p></div>`;
+  document.getElementById("dlg-body").innerHTML = `
+    <div class="sec-label">Plantel e treinador</div>
+    <ul class="roster">
+      <li class="coach">${esc(e.coach)}<small>Treinador</small></li>
+      ${e.jogadores.map(j => `<li>${esc(j)}<small>Jogador</small></li>`).join("")}
+    </ul>
+    <div class="sec-label">Últimos resultados</div>
+    ${ultimos.length ? `
+      <div class="forma">${ultimos.map(r => `<span class="chip ${r.res}" title="J${r.n} vs ${esc(nomeDe(r.adv))}">${r.res}</span>`).join("")}</div>
+      <div class="forma-detail">${ultimos.map(r => `J${r.n} vs ${esc(nomeDe(r.adv))}: ${r.rm}-${r.rs}`).join(" · ")}</div>`
+      : `<p class="forma-detail">Ainda sem jogos disputados.</p>`}
+    <button class="close" type="button" id="fecha">Fechar</button>`;
+  const dlg = document.getElementById("dlg");
+  dlg.showModal();
+  document.getElementById("fecha").addEventListener("click", () => dlg.close());
+}
+
+document.getElementById("grid-equipas").addEventListener("click", ev => {
+  const btn = ev.target.closest(".team-btn");
+  if (btn) abreEquipa(btn.dataset.id);
+});
+document.getElementById("dlg").addEventListener("click", ev => {
+  if (ev.target.id === "dlg") ev.target.close(); // clique fora do conteúdo fecha
+});
+
+function renderCalendario() {
+  document.getElementById("calendario").innerHTML = DADOS.jornadas.map(j => `
+    <div class="round">
+      <h3>Jornada ${j.n} · ${fmtData(j.data)}</h3>
+      ${j.jogos.map(([a, b, ra, rb]) => {
+        const ok = ra !== null && rb !== null;
+        const score = ok
+          ? `<span class="${ra > rb ? "win" : ""}">${ra}</span> – <span class="${rb > ra ? "win" : ""}">${rb}</span>`
+          : "vs";
+        const estado = !ok ? "Por disputar"
+          : !valido(ra, rb) ? "Resultado inválido (não conta para a classificação)"
+          : ra === rb ? "Empate (12-12)" : "Terminado";
+        return `<div class="match ${ok ? "played" : "scheduled"}">
+          <div class="side">${esc(nomeDe(a))}</div>
+          <div class="score">${score}</div>
+          <div class="side r">${esc(nomeDe(b))}</div>
+          <div class="meta">${estado} · BO1</div>
+        </div>`;
+      }).join("")}
+    </div>`).join("");
+}
+
+function renderTabela() {
+  document.getElementById("tabela").innerHTML = classificacao().map((r, i) => {
+    const dif = r.RM - r.RS;
+    return `<tr>
+      <td class="pos">${i + 1}</td>
+      <td class="team"><strong>${esc(nomeDe(r.id))}</strong></td>
+      <td class="num">${r.J}</td><td class="num">${r.V}</td><td class="num">${r.E}</td><td class="num">${r.D}</td>
+      <td class="num">${r.RM}</td><td class="num">${r.RS}</td>
+      <td class="num">${(dif > 0 ? "+" : "") + dif}</td>
+      <td class="num"><strong>${r.P}</strong></td>
+    </tr>`;
+  }).join("");
+}
+
+function renderTaca() {
+  document.getElementById("participantes").innerHTML = DADOS.equipas
+    .map(e => `<span>${esc(e.nome)}</span>`).join("");
+  document.getElementById("taca").innerHTML = DADOS.taca.map(f => `
+    <div class="col">
+      <h3>${esc(f.fase)}</h3>
+      ${f.eliminatorias.map(t => {
+        const ok = t.ra !== null && t.rb !== null;
+        return `<div class="tie">
+          <div><span>${esc(t.a)}</span><span class="${ok && t.ra > t.rb ? "win" : ""}">${ok ? t.ra : "–"}</span></div>
+          <div><span>${esc(t.b)}</span><span class="${ok && t.rb > t.ra ? "win" : ""}">${ok ? t.rb : "–"}</span></div>
+          <div class="date">${fmtData(f.data)} · BO1</div>
+        </div>`;
+      }).join("")}
+    </div>`).join("");
+}
+
+function renderNoticias() {
+  document.getElementById("noticias").innerHTML = DADOS.noticias.map(n => `
+    <article class="card" style="margin-bottom:12px">
+      <div class="sec-label">${fmtData(n.data)}</div>
+      <h3 style="margin:0 0 6px;font-family:var(--display);font-size:22px;text-transform:uppercase">${esc(n.titulo)}</h3>
+      <p style="margin:0">${esc(n.texto)}</p>
+    </article>`).join("");
+}
+
+// Separadores (#equipas, #calendario, #classificacao, #taca, #noticias)
+const TABS = ["equipas", "calendario", "classificacao", "taca", "noticias"];
+function mostra(nome) {
+  if (!TABS.includes(nome)) nome = "equipas";
+  document.querySelectorAll("nav.tabs button").forEach(b => {
+    const on = b.dataset.tab === nome;
+    b.setAttribute("aria-selected", on);
+    b.tabIndex = on ? 0 : -1;
+  });
+  TABS.forEach(t => document.getElementById("p-" + t).hidden = t !== nome);
+}
+document.querySelectorAll("nav.tabs button").forEach(b => {
+  b.addEventListener("click", () => mostra(b.dataset.tab));
+});
+
+fetch("dados.json", { cache: "no-store" })
+  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+  .then(d => {
+    DADOS = d;
+    renderEquipas(); renderCalendario(); renderTabela(); renderTaca(); renderNoticias();
+    mostra(location.hash.slice(1));
+  })
+  .catch(() => {
+    document.querySelector(".wrap").insertAdjacentHTML("afterbegin",
+      '<p class="note">Não foi possível carregar dados.json. Publica o site (por exemplo GitHub Pages) ou usa um servidor local.</p>');
+    mostra("equipas");
+  });
+</script>

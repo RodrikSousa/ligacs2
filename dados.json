@@ -1,0 +1,54 @@
+{
+  "equipas": [
+    { "id": "POR", "nome": "Porto Vanguard", "cidade": "Porto", "logo": null, "coach": "Miguel Sá", "jogadores": ["Falcon", "Nyx", "Rex", "Kairo", "Sable"] },
+    { "id": "LIS", "nome": "Lisboa Nomads", "cidade": "Lisboa", "logo": null, "coach": "Inês Pato", "jogadores": ["Drift", "Vela", "Ohm", "Tiago", "Mira"] },
+    { "id": "BRG", "nome": "Braga Forge", "cidade": "Braga", "logo": null, "coach": "Rui Fonseca", "jogadores": ["Anvil", "Ruan", "Gus", "Pico", "Lume"] },
+    { "id": "CMB", "nome": "Coimbra Echo", "cidade": "Coimbra", "logo": null, "coach": "Dário Melo", "jogadores": ["Echo", "Ivo", "Sol", "Dante", "Nova"] },
+    { "id": "FAR", "nome": "Faro Tide", "cidade": "Faro", "logo": null, "coach": "Sofia Lima", "jogadores": ["Wave", "Bruno", "Kite", "Zed", "Luz"] },
+    { "id": "AVR", "nome": "Aveiro Kings", "cidade": "Aveiro", "logo": null, "coach": "Paulo Reis", "jogadores": ["Crown", "Lars", "Mago", "Ana", "Sky"] },
+    { "id": "VIS", "nome": "Viseu Zero", "cidade": "Viseu", "logo": null, "coach": "Lúcia Cruz", "jogadores": ["Zero", "Hugo", "Quill", "Bia", "Nim"] },
+    { "id": "GAI", "nome": "Gaia Rush", "cidade": "Vila Nova de Gaia", "logo": null, "coach": "André Gomes", "jogadores": ["Rush", "Teo", "Vox", "Ema", "Pilar"] }
+  ],
+  "jornadas": [
+    { "n": 1, "data": "2026-10-03", "jogos": [
+      ["POR", "LIS", 13, 10], ["BRG", "CMB", 13, 8], ["FAR", "AVR", 10, 13], ["VIS", "GAI", 13, 11]
+    ]},
+    { "n": 2, "data": "2026-10-10", "jogos": [
+      ["LIS", "BRG", 11, 13], ["CMB", "FAR", 12, 12], ["AVR", "POR", 13, 9], ["GAI", "VIS", 13, 8]
+    ]},
+    { "n": 3, "data": "2026-10-17", "jogos": [
+      ["POR", "CMB", null, null], ["BRG", "AVR", null, null], ["FAR", "GAI", null, null], ["LIS", "VIS", null, null]
+    ]},
+    { "n": 4, "data": "2026-10-24", "jogos": [
+      ["AVR", "LIS", null, null], ["CMB", "GAI", null, null], ["VIS", "POR", null, null], ["BRG", "FAR", null, null]
+    ]},
+    { "n": 5, "data": "2026-10-31", "jogos": [
+      ["POR", "BRG", null, null], ["FAR", "LIS", null, null], ["GAI", "AVR", null, null], ["CMB", "VIS", null, null]
+    ]},
+    { "n": 6, "data": "2026-11-07", "jogos": [
+      ["LIS", "CMB", null, null], ["AVR", "VIS", null, null], ["GAI", "POR", null, null], ["BRG", "FAR", null, null]
+    ]},
+    { "n": 7, "data": "2026-11-14", "jogos": [
+      ["POR", "FAR", null, null], ["LIS", "GAI", null, null], ["VIS", "BRG", null, null], ["CMB", "AVR", null, null]
+    ]}
+  ],
+  "taca": [
+    { "fase": "Quartos de final", "data": "2026-11-21", "eliminatorias": [
+      { "a": "Porto Vanguard", "b": "Gaia Rush", "ra": null, "rb": null },
+      { "a": "Lisboa Nomads", "b": "Viseu Zero", "ra": null, "rb": null },
+      { "a": "Braga Forge", "b": "Faro Tide", "ra": null, "rb": null },
+      { "a": "Coimbra Echo", "b": "Aveiro Kings", "ra": null, "rb": null }
+    ]},
+    { "fase": "Meias-finais", "data": "2026-11-28", "eliminatorias": [
+      { "a": "Vencedor QF1", "b": "Vencedor QF4", "ra": null, "rb": null },
+      { "a": "Vencedor QF2", "b": "Vencedor QF3", "ra": null, "rb": null }
+    ]},
+    { "fase": "Final", "data": "2026-12-05", "eliminatorias": [
+      { "a": "Vencedor SF1", "b": "Vencedor SF2", "ra": null, "rb": null }
+    ]}
+  ],
+  "noticias": [
+    { "data": "2026-10-10", "titulo": "Resultados da 2.ª jornada", "texto": "Já estão disponíveis os resultados da segunda jornada da fase regular." },
+    { "data": "2026-10-03", "titulo": "Arranque da liga", "texto": "A 1.ª jornada da liga foi disputada a 3 de outubro. Consulta o calendário completo." }
+  ]
+}

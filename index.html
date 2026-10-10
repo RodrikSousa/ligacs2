@@ -172,7 +172,7 @@ footer { margin-top: 40px; font-size: 12px; color: var(--muted); }
   <section id="p-equipas" role="tabpanel" aria-labelledby="t-equipas">
     <h2>Equipas</h2>
     <p class="lede">Clica numa equipa para ver o plantel, o treinador e os últimos resultados.</p>
-    <p class="note">Nomes, logótipos, jogadores e resultados são exemplos. Os dados estão em <code>dados.json</code>.</p>
+    <p class="note">Nomes, logótipos, jogadores e resultados são exemplos. Os dados vêm da folha de gestão.</p>
     <div class="grid" id="grid-equipas"></div>
   </section>
 
@@ -207,7 +207,7 @@ footer { margin-top: 40px; font-size: 12px; color: var(--muted); }
     <div id="noticias"></div>
   </section>
 
-  <footer>Os dados vêm do ficheiro dados.json. Ver LEIA-ME para atualizar.</footer>
+  <footer>Os dados vêm da folha de gestão (Google Sheets).</footer>
 </div>
 
 <dialog id="dlg" aria-labelledby="dlg-nome">
@@ -216,7 +216,7 @@ footer { margin-top: 40px; font-size: 12px; color: var(--muted); }
 </dialog>
 
 <script>
-// ===== DADOS: carregados de dados.json (editar só esse ficheiro) =====
+// ===== DADOS: preenchidos a partir da folha =====
 let DADOS = null;
 
 // ===== LÓGICA =====
@@ -381,16 +381,99 @@ document.querySelectorAll("nav.tabs button").forEach(b => {
   b.addEventListener("click", () => mostra(b.dataset.tab));
 });
 
-fetch("dados.json", { cache: "no-store" })
-  .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+// ===== CARREGAMENTO =====
+// Os dados vêm de 4 separadores publicados da folha, em CSV.
+// Cada separador é identificado pelo cabeçalho, por isso não depende da ordem dos links.
+const FOLHAS = [
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQeUcoe7cB2mBd_m0eRgpp_S4-MfRY3ysekfYognoqzl-ryuQqwpPFKbrFuDEsKcsI4ejwcdlqVNGNV/pub?gid=1972424717&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQeUcoe7cB2mBd_m0eRgpp_S4-MfRY3ysekfYognoqzl-ryuQqwpPFKbrFuDEsKcsI4ejwcdlqVNGNV/pub?gid=475912284&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQeUcoe7cB2mBd_m0eRgpp_S4-MfRY3ysekfYognoqzl-ryuQqwpPFKbrFuDEsKcsI4ejwcdlqVNGNV/pub?gid=1404282622&single=true&output=csv",
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vQeUcoe7cB2mBd_m0eRgpp_S4-MfRY3ysekfYognoqzl-ryuQqwpPFKbrFuDEsKcsI4ejwcdlqVNGNV/pub?gid=1045190968&single=true&output=csv"
+];
+
+function parseCSV(texto) {
+  const rows = [];
+  let row = [], cur = "", aspas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i];
+    if (aspas) {
+      if (c === '"') {
+        if (texto[i + 1] === '"') { cur += '"'; i++; } else aspas = false;
+      } else cur += c;
+    } else if (c === '"') aspas = true;
+    else if (c === ",") { row.push(cur); cur = ""; }
+    else if (c === "\n") { row.push(cur); rows.push(row); row = []; cur = ""; }
+    else if (c !== "\r") cur += c;
+  }
+  if (cur.length || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim() !== ""));
+}
+
+function objetos(rows) {
+  if (!rows.length) return [];
+  const cab = rows[0].map(h => h.trim());
+  return rows.slice(1).map(r => Object.fromEntries(cab.map((h, i) => [h, (r[i] ?? "").trim()])))
+    .map(o => Object.assign(o, { __cab: cab }));
+}
+
+function paraData(s) {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s || "");
+  if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  return s || "";
+}
+const numOuNull = v => (v === "" || v == null) ? null : Number(v);
+
+function montaDados(textos) {
+  const tabelas = textos.map(t => objetos(parseCSV(t)));
+  const com = cab => tabelas.find(t => t.length && t[0].__cab.includes(cab)) || [];
+  const eqRows = com("Jogador 1"), jgRows = com("Rondas casa"), tcRows = com("Equipa A"), ntRows = com("Publicada (Sim/Não)");
+
+  const equipas = eqRows.filter(o => o["Aprovada (Sim/Não)"] === "Sim").map(o => ({
+    id: o["ID"], nome: o["Nome"], cidade: o["Cidade"], coach: o["Treinador"],
+    jogadores: [1, 2, 3, 4, 5].map(i => o["Jogador " + i]).filter(Boolean),
+    logo: o["Logótipo (URL, opcional)"] || null
+  }));
+
+  const jornadasMap = new Map();
+  jgRows.filter(o => o["Casa"]).forEach(o => {
+    const n = Number(o["Jornada"]);
+    if (!jornadasMap.has(n)) jornadasMap.set(n, { n, data: paraData(o["Data"]), jogos: [] });
+    jornadasMap.get(n).jogos.push([o["Casa"], o["Fora"], numOuNull(o["Rondas casa"]), numOuNull(o["Rondas fora"])]);
+  });
+  const jornadas = [...jornadasMap.values()].sort((a, b) => a.n - b.n);
+
+  const tacaMap = new Map();
+  tcRows.filter(o => o["Equipa A"]).forEach(o => {
+    const f = o["Fase"];
+    if (!tacaMap.has(f)) tacaMap.set(f, { fase: f, data: paraData(o["Data"]), eliminatorias: [] });
+    tacaMap.get(f).eliminatorias.push({ a: o["Equipa A"], b: o["Equipa B"], ra: numOuNull(o["Rondas A"]), rb: numOuNull(o["Rondas B"]) });
+  });
+  const taca = [...tacaMap.values()];
+
+  const noticias = ntRows.filter(o => o["Publicada (Sim/Não)"] === "Sim" && o["Título"])
+    .map(o => ({ data: paraData(o["Data"]), titulo: o["Título"], texto: o["Texto"] }))
+    .sort((a, b) => (b.data > a.data ? 1 : b.data < a.data ? -1 : 0));
+
+  return { equipas, jornadas, taca, noticias };
+}
+
+async function carregaFolhas() {
+  const textos = await Promise.all(FOLHAS.map(u =>
+    fetch(u, { cache: "no-store" }).then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })));
+  return montaDados(textos);
+}
+// ===== FIM CARREGAMENTO =====
+
+carregaFolhas()
   .then(d => {
     DADOS = d;
     renderEquipas(); renderCalendario(); renderTabela(); renderTaca(); renderNoticias();
     mostra(location.hash.slice(1));
   })
-  .catch(() => {
+  .catch(err => {
+    console.error(err);
     document.querySelector(".wrap").insertAdjacentHTML("afterbegin",
-      '<p class="note">Não foi possível carregar dados.json. Publica o site (por exemplo GitHub Pages) ou usa um servidor local.</p>');
+      '<p class="note">Não foi possível ler a folha. Confirma que os separadores estão publicados em CSV.</p>');
     mostra("equipas");
   });
 </script>
